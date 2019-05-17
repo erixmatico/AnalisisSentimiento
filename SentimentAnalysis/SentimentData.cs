@@ -10,10 +10,8 @@ namespace SentimentAnalysis
     {
         [LoadColumn(0)]
         public string SentimentText;
-        [LoadColumn(1)]
-        public string Pais { get; set; }
 
-        [LoadColumn(2), ColumnName("Label")]
+        [LoadColumn(1), ColumnName("Label")]
         public bool Sentiment;
     }
 

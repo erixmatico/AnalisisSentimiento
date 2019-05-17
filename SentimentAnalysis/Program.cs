@@ -16,36 +16,48 @@ namespace SentimentAnalysis
 
         static void Main(string[] args)
         {
-            // Create ML.NET context/local environment - allows you to add steps in order to keep everything together 
-            // as you discover the ML.NET trainers and transforms 
-            // <SnippetCreateMLContext>
-            MLContext mlContext = new MLContext();
-            // </SnippetCreateMLContext>
-
-            // <SnippetCallLoadData>
-            TrainTestData splitDataView = LoadData(mlContext);
-            // </SnippetCallLoadData>
+            byte bandera = 0;
+            do {
+                Console.WriteLine("Ingrese la frase por favor");
+                string frase = Console.ReadLine();           
+     
 
 
-            // <SnippetCallBuildAndTrainModel>
-            ITransformer model = BuildAndTrainModel(mlContext, splitDataView.TrainSet);
-            // </SnippetCallBuildAndTrainModel>
+                // Create ML.NET context/local environment - allows you to add steps in order to keep everything together 
+                // as you discover the ML.NET trainers and transforms 
+                // <SnippetCreateMLContext>
+                MLContext mlContext = new MLContext();
+                // </SnippetCreateMLContext>
 
-            // <SnippetCallEvaluate>
-            //Evaluate(mlContext, model, splitDataView.TestSet);
-            // </SnippetCallEvaluate>
+                // <SnippetCallLoadData>
+                TrainTestData splitDataView = LoadData(mlContext);
+                // </SnippetCallLoadData>
 
-            // <SnippetCallUseModelWithSingleItem>
-            UseModelWithSingleItem(mlContext, model);
-            // </SnippetCallUseModelWithSingleItem>
 
-            // <SnippetCallUseModelWithBatchItems>
-            UseModelWithBatchItems(mlContext, model);
-            // </SnippetCallUseModelWithBatchItems>
+                // <SnippetCallBuildAndTrainModel>
+                ITransformer model = BuildAndTrainModel(mlContext, splitDataView.TrainSet);
+                // </SnippetCallBuildAndTrainModel>
 
-            Console.WriteLine();
-            Console.WriteLine("=============== End of process ===============");
-            Console.ReadKey();
+                // <SnippetCallEvaluate>
+                Evaluate(mlContext, model, splitDataView.TestSet);
+                // </SnippetCallEvaluate>
+
+                // <SnippetCallUseModelWithSingleItem>
+                UseModelWithSingleItem(mlContext, model, new SentimentData { SentimentText = frase});
+                // </SnippetCallUseModelWithSingleItem>
+
+                // <SnippetCallUseModelWithBatchItems>
+                //UseModelWithBatchItems(mlContext, model);
+                // </SnippetCallUseModelWithBatchItems>
+
+                Console.WriteLine();
+                Console.WriteLine("=============== End of process ===============");
+                Console.WriteLine("Presiona 1 para continuar o cualquier letra para terminar");
+                bandera = Convert.ToByte(Console.ReadLine());
+                
+
+            } while (bandera == 1);
+
         }
 
         public static TrainTestData LoadData(MLContext mlContext)
@@ -61,34 +73,42 @@ namespace SentimentAnalysis
                  new SentimentData
                 {
                     SentimentText = "Esto es horrible",
-                    Pais = "Colombia",
                     Sentiment = false
                 },
+                 new SentimentData{
+                     SentimentText = "Eres una mala persona",
+                     Sentiment = false
+                 },
+                 new SentimentData{
+                     SentimentText = "Maldicion esto no esta esta bien",
+                     Sentiment = false
+                 },
                 new SentimentData
                 {
                     SentimentText = "No lo se tu dime.",
-                    Pais = "Mexico",
                     Sentiment = false
                 },
                 new SentimentData{
                     SentimentText = "Me pone feliz",
-                    Pais = "Mexico",
                     Sentiment = true
                 },
                 new SentimentData{
                     SentimentText = "Eres un bruto",
-                    Pais = "Colombia",
-                    Sentiment = false
-                },
-                new SentimentData{
-                    SentimentText = "Eres bastante hermosa",
-                    Pais = "Mexico",
                     Sentiment = true
                 },
                 new SentimentData{
-                    SentimentText = "Hijo de puta Malparido Pirobo gonorrea perro",
-                    Pais = "Colombia",
+                    SentimentText = "Eres bastante hermosa",
+                    Sentiment = false
+                },
+                new SentimentData{
+                    SentimentText = "Hijo eres lo mejor de mi vida",
+                    Sentiment = true
+                },
+                new SentimentData{
+                    SentimentText = "Me pareces genial, eres espectacular",
+                    Sentiment = true
                 }
+
             });
 
             // You need both a training dataset to train the model and a test dataset to evaluate the model.
@@ -113,7 +133,6 @@ namespace SentimentAnalysis
             //</SnippetFeaturizeText>
             // append the machine learning task to the estimator
             // <SnippetAddTrainer> 
-            .Append(mlContext.Transforms.Text.FeaturizeText(outputColumnName: "Features", inputColumnName: nameof(SentimentData.Pais)))
             .Append(mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(labelColumnName: "Label", featureColumnName: "Features"));
             // </SnippetAddTrainer>
             // Create and train the model based on the dataset that has been loaded, transformed.
@@ -169,21 +188,21 @@ namespace SentimentAnalysis
 
         }
 
-        private static void UseModelWithSingleItem(MLContext mlContext, ITransformer model)
+        private static void UseModelWithSingleItem(MLContext mlContext, ITransformer model, SentimentData _sentimentData)
         {
             // <SnippetCreatePredictionEngine1>
             PredictionEngine<SentimentData, SentimentPrediction> predictionFunction = mlContext.Model.CreatePredictionEngine<SentimentData, SentimentPrediction>(model);
             // </SnippetCreatePredictionEngine1>
 
             // <SnippetCreateTestIssue1>
-            SentimentData sampleStatement = new SentimentData
-            {
-                SentimentText = "This was a very bad steak"
-            };
+            //SentimentData sampleStatement = new SentimentData
+            //{
+            //    SentimentText = "This was a very bad steak"
+            //};
             // </SnippetCreateTestIssue1>
 
             // <SnippetPredict>
-            var resultprediction = predictionFunction.Predict(sampleStatement);
+            var resultprediction = predictionFunction.Predict(_sentimentData);
             // </SnippetPredict>
             // <SnippetOutputPrediction>
             Console.WriteLine();
@@ -219,15 +238,12 @@ namespace SentimentAnalysis
                 //}, 
                 new SentimentData{
                     SentimentText = "Eres bastante hermosa",
-                    Pais = "Mexico",
                 },
                 new SentimentData{
                     SentimentText = "bruto",
-                    Pais = "Colombia",
                 },
                 new SentimentData{
-                    SentimentText = "perro",
-                    Pais = "Colombia",
+                    SentimentText = "Hijo de puta Malparido Pirobo gonorrea perro"
                 }
             };
             // </SnippetCreateTestIssues>
